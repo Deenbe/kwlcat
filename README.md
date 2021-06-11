@@ -10,6 +10,7 @@
 - Observable
 - Scalable
 - Economical
+- Super portable
 - Zero application infrastructure management
 
 
