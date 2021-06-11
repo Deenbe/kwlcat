@@ -5,6 +5,7 @@
 ## Features
 - Highly opinionated
 - Micro-services architecture
+- Polyglot
 - Serverless devops
 - Secure
 - Observable
