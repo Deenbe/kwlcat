@@ -1,7 +1,7 @@
 package main
 
 import (
-	"otsample/cmd"
+	"gopi/cmd"
 )
 
 func main() {

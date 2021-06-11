@@ -14,7 +14,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"otsample/global"
+	"gopi/global"
 	"time"
 )
 

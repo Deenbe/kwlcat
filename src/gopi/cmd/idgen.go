@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"net/http"
 	"os"
-	"otsample/global"
+	"gopi/global"
 )
 
 var (

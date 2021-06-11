@@ -1,4 +1,4 @@
-module otsample
+module gopi
 
 go 1.15
 

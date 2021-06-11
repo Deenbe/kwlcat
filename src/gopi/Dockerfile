@@ -1,22 +1,22 @@
 FROM golang:1.16.3-alpine3.13
 
-RUN mkdir -p /home/ots
-WORKDIR /home/ots
-COPY go.mod /home/ots/
-COPY go.sum /home/ots/
-COPY main.go /home/ots/
-COPY awsap/ /home/ots/awsap/
-COPY cmd/ /home/ots/cmd/
-COPY global/ /home/ots/global/
+RUN mkdir -p /home/gopi
+WORKDIR /home/gopi
+COPY go.mod /home/gopi/
+COPY go.sum /home/gopi/
+COPY main.go /home/gopi/
+COPY awsap/ /home/gopi/awsap/
+COPY cmd/ /home/gopi/cmd/
+COPY global/ /home/gopi/global/
 
-RUN ls /home/ots/awsap/dynamodb/
+RUN ls /home/gopi/awsap/dynamodb/
 ENV GOPROXY=https://goproxy.io,direct
 
 RUN go get
-RUN go build -o build/ots .
+RUN go build -o build/gopi .
 
 
 FROM alpine:3.13
-COPY --from=0 /home/ots/build/ots /usr/local/bin/
+COPY --from=0 /home/gopi/build/gopi /usr/local/bin/
 
-ENTRYPOINT ["ots"]
+ENTRYPOINT ["gopi"]
