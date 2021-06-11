@@ -1,0 +1,25 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:55680
+      http:
+        endpoint: 0.0.0.0:55681
+
+exporters:
+  awsxray:
+
+processors:
+  memory_limiter:
+    limit_mib: 100
+    check_interval: 5s
+
+service:
+  pipelines:
+    traces:
+      processors:
+        - memory_limiter
+      receivers:
+        - otlp
+      exporters:
+        - awsxray
