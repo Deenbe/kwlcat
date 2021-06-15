@@ -36,7 +36,10 @@ var lastNames = []string{"Aho", "Babbage", "Bahl", "Bartik", "Barners-Lee", "Bla
 
 func init() {
 	NameGenCmd.Flags().StringVar(&idGenApiBaseUrl, "idgen-api-base-url", "", "idgen api base address")
-	NameGenCmd.MarkFlagRequired("idgen-api-base-url")
+	err := NameGenCmd.MarkFlagRequired("idgen-api-base-url")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func setupNameGenServer() (http.Handler, error) {
