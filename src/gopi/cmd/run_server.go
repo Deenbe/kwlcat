@@ -14,15 +14,18 @@ import (
 type Setup func() (http.Handler, error)
 
 func RunServerWithProfiler(setup Setup) error {
-	fd, err := os.Create("cpu.prof")
-	if err != nil {
-		return errors.WithStack(err)
+	if profile {
+		fd, err := os.Create("cpu.prof")
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		pprof.StartCPUProfile(fd)
+		defer pprof.StopCPUProfile()
 	}
-	pprof.StartCPUProfile(fd)
-	defer pprof.StopCPUProfile()
 
 	ctx, cancelFn := context.WithCancel(context.Background())
 	chanSignal := make(chan os.Signal, 1)
+	done := make(chan error)
 	signal.Notify(chanSignal, os.Interrupt)
 
 	server := &http.Server{
@@ -35,14 +38,17 @@ func RunServerWithProfiler(setup Setup) error {
 		}
 		server.Handler = h
 		log.Printf("listening on %s", server.Addr)
-		server.ListenAndServe()
+		done <- server.ListenAndServe()
 	}()
+
+	var err error
 
 	select {
 	case <-chanSignal:
+		server.Shutdown(ctx)
+	case err = <-done:
 	}
-	cancelFn()
-	server.Shutdown(ctx)
-	return nil
-}
 
+	cancelFn()
+	return err
+}

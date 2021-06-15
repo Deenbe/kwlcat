@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"os"
 	"gopi/global"
+	"strings"
 	"time"
 )
 
@@ -27,10 +28,16 @@ var (
 			return RunServerWithProfiler(setupNameGenServer)
 		},
 	}
+	idGenApiBaseUrl = ""
 )
 
 var firstNames = []string{"Alfred", "Charles", "Victor", "Jean", "Tim", "Sue", "Ada", "David", "John"}
 var lastNames = []string{"Aho", "Babbage", "Bahl", "Bartik", "Barners-Lee", "Black", "Lovelace", "Blie", "Carmack"}
+
+func init() {
+	NameGenCmd.Flags().StringVar(&idGenApiBaseUrl, "idgen-api-base-url", "", "idgen api base address")
+	NameGenCmd.MarkFlagRequired("idgen-api-base-url")
+}
 
 func setupNameGenServer() (http.Handler, error) {
 	global.InitialiseTrace("namegen")
@@ -47,7 +54,8 @@ func setupNameGenServer() (http.Handler, error) {
 			lni := randSrc.Intn(len(lastNames))
 			name := fmt.Sprintf("%s %s", firstNames[fni], lastNames[lni])
 
-			getID, _ := http.NewRequestWithContext(req.Context(), "GET", "http://localhost:8080/ids/next", nil)
+			idGenApiBaseUrl = strings.TrimRight(idGenApiBaseUrl, "/")
+			getID, _ := http.NewRequestWithContext(req.Context(), "GET", fmt.Sprintf("%s/ids/next", idGenApiBaseUrl), nil)
 			response, err := client.Do(getID)
 			if err != nil {
 				log.Print(err)
