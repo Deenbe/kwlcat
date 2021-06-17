@@ -7,6 +7,7 @@ exporters:
   jaeger:
     endpoint: jaeger-all-in-one:14250
     insecure: true
+  awsxray:
 
 processors:
   batch:
@@ -20,4 +21,4 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [jaeger]
+      exporters: [jaeger, awsxray]
