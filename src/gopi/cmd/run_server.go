@@ -3,18 +3,32 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	"github.com/mattn/go-colorable"
 	"github.com/pkg/errors"
-	"log"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"net/http"
 	"os"
 	"os/signal"
 	"runtime/pprof"
 )
 
-type Setup func() (http.Handler, error)
+type Setup func(*mux.Router) error
 
-func RunServerWithProfiler(setup Setup) error {
+func getLogger() (*zap.Logger) {
+	encoderConfig := zap.NewDevelopmentEncoderConfig()
+	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	return zap.New(zapcore.NewCore(zapcore.NewConsoleEncoder(encoderConfig), zapcore.AddSync(colorable.NewColorableStdout()), zapcore.DebugLevel), zap.WithCaller(true))
+}
+
+func RunServerWithProfiler(name string, setup Setup) error {
+	logger := getLogger()
+
 	if profile {
+		logger.Sugar().Debug("starting with profiler")
 		fd, err := os.Create("cpu.prof")
 		if err != nil {
 			return errors.WithStack(err)
@@ -31,20 +45,25 @@ func RunServerWithProfiler(setup Setup) error {
 	server := &http.Server{
 		Addr: fmt.Sprintf("%s:%d", host, port),
 	}
+	r := mux.NewRouter()
+	r.Use(otelmux.Middleware(name))
+
+	err := setup(r)
+	if err != nil {
+		return err
+	}
+
+	h := handlers.LoggingHandler(os.Stdout, r)
+	server.Handler = h
+
 	go func() {
-		h, err := setup()
-		if err != nil {
-			log.Fatal(err)
-		}
-		server.Handler = h
-		log.Printf("listening on %s", server.Addr)
+		logger.Sugar().Infof("listening on %v", server.Addr)
 		done <- server.ListenAndServe()
 	}()
 
-	var err error
-
 	select {
 	case <-chanSignal:
+		logger.Sugar().Info("shutting down")
 		server.Shutdown(ctx)
 	case err = <-done:
 	}

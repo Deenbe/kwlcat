@@ -3,13 +3,10 @@ package cmd
 import (
 	"encoding/json"
 	"github.com/buddyspike/awsap/dynamodb"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
-	"net/http"
-	"os"
 	"gopi/global"
+	"net/http"
 )
 
 var (
@@ -18,19 +15,18 @@ var (
 		Short: "Run id generation api",
 		Long:  "Run id generation api",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunServerWithProfiler(setupIDGenServer)
+			const name string = "idgen"
+			global.InitialiseTrace(name)
+			return RunServerWithProfiler(name, setupIDGenServer)
 		},
 	}
 )
 
-func setupIDGenServer() (http.Handler, error) {
-	global.InitialiseTrace("idgen")
+func setupIDGenServer(r *mux.Router) error {
 	monotonicIDGenerator, err := dynamodb.NewMonotonicIDGenerator("ids", dynamodb.WithTraceProvider(global.TracerProvider))
 	if err != nil {
-		return nil, err
+		return err
 	}
-	r := mux.NewRouter()
-	r.Use(otelmux.Middleware("idgen"))
 	r.PathPrefix("/ids/next").
 		Methods("GET").
 		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -44,6 +40,5 @@ func setupIDGenServer() (http.Handler, error) {
 			}
 	})
 
-	rtr := handlers.LoggingHandler(os.Stdout, r)
-	return rtr, nil
+	return nil
 }

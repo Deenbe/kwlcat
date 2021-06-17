@@ -3,18 +3,15 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/semconv"
 	"go.opentelemetry.io/otel/trace"
+	"gopi/global"
 	"log"
 	"math/rand"
 	"net/http"
-	"os"
-	"gopi/global"
 	"strings"
 	"time"
 )
@@ -25,7 +22,9 @@ var (
 		Short: "Run name generation api",
 		Long:  "Run name generation api",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunServerWithProfiler(setupNameGenServer)
+			const name string = "namegen"
+			global.InitialiseTrace(name)
+			return RunServerWithProfiler(name, setupNameGenServer)
 		},
 	}
 	idGenApiBaseUrl = ""
@@ -42,13 +41,10 @@ func init() {
 	}
 }
 
-func setupNameGenServer() (http.Handler, error) {
-	global.InitialiseTrace("namegen")
+func setupNameGenServer(r *mux.Router) error {
 	client := &http.Client{
 		Transport: otelhttp.NewTransport(http.DefaultTransport, otelhttp.WithTracerProvider(global.TracerProvider), otelhttp.WithSpanOptions(trace.WithAttributes(semconv.PeerServiceKey.String("idgen")))),
 	}
-	r := mux.NewRouter()
-	r.Use(otelmux.Middleware("namegen"))
 	r.PathPrefix("/names/next").
 		Methods("GET").
 		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -85,6 +81,5 @@ func setupNameGenServer() (http.Handler, error) {
 			}
 		})
 
-	rtr := handlers.LoggingHandler(os.Stdout, r)
-	return rtr, nil
+	return nil
 }
