@@ -18,7 +18,7 @@ import (
 
 type Setup func(*mux.Router) error
 
-func getLogger() (*zap.Logger) {
+func getLogger() *zap.Logger {
 	encoderConfig := zap.NewDevelopmentEncoderConfig()
 	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	return zap.New(zapcore.NewCore(zapcore.NewConsoleEncoder(encoderConfig), zapcore.AddSync(colorable.NewColorableStdout()), zapcore.DebugLevel), zap.WithCaller(true))
@@ -46,6 +46,13 @@ func RunServerWithProfiler(name string, setup Setup) error {
 		Addr: fmt.Sprintf("%s:%d", host, port),
 	}
 	r := mux.NewRouter()
+	r.PathPrefix("/healthcheck").
+		Methods("GET").
+		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+			res.WriteHeader(200)
+			res.Write([]byte("healthy\n"))
+		})
+
 	r.Use(otelmux.Middleware(name))
 
 	err := setup(r)
