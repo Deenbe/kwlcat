@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/semconv"
@@ -12,6 +13,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -23,6 +25,14 @@ var (
 		Long:  "Run name generation api",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			const name string = "namegen"
+			if idGenApiBaseUrl == "" {
+				serviceDiscoveryEndpoint, ok := os.LookupEnv("COPILOT_SERVICE_DISCOVERY_ENDPOINT")
+				if !ok {
+					return errors.Errorf("idgen-api-base-url must be specified")
+				}
+				idGenApiBaseUrl = fmt.Sprintf("http://idgen.%s", serviceDiscoveryEndpoint)
+			}
+
 			global.InitialiseTrace(name)
 			return RunServerWithProfiler(name, setupNameGenServer)
 		},
@@ -35,10 +45,6 @@ var lastNames = []string{"Aho", "Babbage", "Bahl", "Bartik", "Barners-Lee", "Bla
 
 func init() {
 	NameGenCmd.Flags().StringVar(&idGenApiBaseUrl, "idgen-api-base-url", "", "idgen api base address")
-	err := NameGenCmd.MarkFlagRequired("idgen-api-base-url")
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func setupNameGenServer(r *mux.Router) error {
