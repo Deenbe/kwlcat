@@ -46,18 +46,22 @@ func RunServerWithProfiler(name string, setup Setup) error {
 		Addr: fmt.Sprintf("%s:%d", host, port),
 	}
 	r := mux.NewRouter()
-	r.PathPrefix("/healthcheck").
-		Methods("GET").
-		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			res.WriteHeader(200)
-			res.Write([]byte("healthy\n"))
-		})
-
 	r.Use(otelmux.Middleware(name))
 
 	err := setup(r)
 	if err != nil {
 		return err
+	}
+
+	const defaultHealthCheckPath string = "/healthcheck"
+	if r.GetRoute(defaultHealthCheckPath) == nil {
+		logger.Sugar().Infof("default healthcheck is configured on %s", defaultHealthCheckPath)
+		r.PathPrefix(defaultHealthCheckPath).
+			Methods("GET").
+			HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+				res.WriteHeader(200)
+				res.Write([]byte("healthy\n"))
+			})
 	}
 
 	h := handlers.LoggingHandler(os.Stdout, r)

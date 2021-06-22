@@ -60,7 +60,7 @@ func setupNameGenServer(r *mux.Router) error {
 			name := fmt.Sprintf("%s %s", firstNames[fni], lastNames[lni])
 
 			idGenApiBaseUrl = strings.TrimRight(idGenApiBaseUrl, "/")
-			getID, _ := http.NewRequestWithContext(req.Context(), "GET", fmt.Sprintf("%s/ids/next", idGenApiBaseUrl), nil)
+			getID, _ := http.NewRequestWithContext(req.Context(), "GET", fmt.Sprintf("%s:8080/ids/next", idGenApiBaseUrl), nil)
 			response, err := client.Do(getID)
 			if err != nil {
 				log.Print(err)

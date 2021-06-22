@@ -4,17 +4,27 @@ import (
 	"encoding/json"
 	"github.com/buddyspike/awsap/dynamodb"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"gopi/global"
 	"net/http"
+	"os"
 )
 
 var (
+	idGenTableName string
 	IDGenCmd = &cobra.Command{
 		Use:   "idgen",
 		Short: "Run id generation api",
 		Long:  "Run id generation api",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if idGenTableName == "" {
+				var ok bool
+				idGenTableName, ok = os.LookupEnv("IDGEN_NAME")
+				if !ok {
+					return errors.Errorf("idgen-table-name must be specified")
+				}
+			}
 			const name string = "idgen"
 			global.InitialiseTrace(name)
 			return RunServerWithProfiler(name, setupIDGenServer)
@@ -22,8 +32,12 @@ var (
 	}
 )
 
+func init() {
+	IDGenCmd.Flags().StringVar(&idGenTableName, "idgen-table-name", "", "dynamodb table name")
+}
+
 func setupIDGenServer(r *mux.Router) error {
-	monotonicIDGenerator, err := dynamodb.NewMonotonicIDGenerator("ids", dynamodb.WithTraceProvider(global.TracerProvider))
+	monotonicIDGenerator, err := dynamodb.NewMonotonicIDGenerator(idGenTableName, dynamodb.WithTraceProvider(global.TracerProvider))
 	if err != nil {
 		return err
 	}
