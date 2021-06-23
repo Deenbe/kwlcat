@@ -14,6 +14,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/semconv"
 	otelTrace "go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 	"log"
 	"os"
 	"time"
@@ -24,12 +25,14 @@ var (
 	TracerProvider otelTrace.TracerProvider
 )
 
-func initialiseXrayTrace(name string) func() {
+func initialiseXrayTrace(name string, logger *zap.Logger) func() {
 	ctx := context.Background()
 	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 	if endpoint == "" {
 		endpoint = "0.0.0.0:4317"
 	}
+
+	logger.Sugar().Infof("otel exporter endpoint is %s", endpoint)
 
 	driver := otlpgrpc.NewDriver(otlpgrpc.WithInsecure(), otlpgrpc.WithEndpoint(endpoint))
 
@@ -75,6 +78,6 @@ func initialiseXrayTrace(name string) func() {
 	}
 }
 
-func InitialiseTrace(name string) func() {
-	return initialiseXrayTrace(name)
+func InitialiseTrace(name string, logger *zap.Logger) func() {
+	return initialiseXrayTrace(name, logger)
 }

@@ -37,8 +37,9 @@ var (
 				idGenApiBaseUrl = fmt.Sprintf("http://idgen.%s:%d", serviceDiscoveryEndpoint, idGenApiPort)
 			}
 
-			global.InitialiseTrace(name)
-			return RunServerWithProfiler(name, setupNameGenServer)
+			logger := getLogger()
+			global.InitialiseTrace(name, logger)
+			return RunServerWithProfiler(name, setupNameGenServer, logger)
 		},
 	}
 	idGenApiBaseUrl = ""

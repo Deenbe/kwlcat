@@ -26,8 +26,9 @@ var (
 				}
 			}
 			const name string = "idgen"
-			global.InitialiseTrace(name)
-			return RunServerWithProfiler(name, setupIDGenServer)
+			logger := getLogger()
+			global.InitialiseTrace(name, logger)
+			return RunServerWithProfiler(name, setupIDGenServer, logger)
 		},
 	}
 )

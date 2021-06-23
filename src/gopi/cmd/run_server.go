@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/mattn/go-colorable"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,15 +16,7 @@ import (
 
 type Setup func(*mux.Router) error
 
-func getLogger() *zap.Logger {
-	encoderConfig := zap.NewDevelopmentEncoderConfig()
-	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	return zap.New(zapcore.NewCore(zapcore.NewConsoleEncoder(encoderConfig), zapcore.AddSync(colorable.NewColorableStdout()), zapcore.DebugLevel), zap.WithCaller(true))
-}
-
-func RunServerWithProfiler(name string, setup Setup) error {
-	logger := getLogger()
-
+func RunServerWithProfiler(name string, setup Setup, logger *zap.Logger) error {
 	if profile {
 		logger.Sugar().Debug("starting with profiler")
 		fd, err := os.Create("cpu.prof")
