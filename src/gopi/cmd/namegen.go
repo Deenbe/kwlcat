@@ -30,7 +30,11 @@ var (
 				if !ok {
 					return errors.Errorf("idgen-api-base-url must be specified")
 				}
-				idGenApiBaseUrl = fmt.Sprintf("http://idgen.%s", serviceDiscoveryEndpoint)
+				if idGenApiPort == 0 {
+					return errors.Errorf("idgen-api-port must be specified")
+				}
+
+				idGenApiBaseUrl = fmt.Sprintf("http://idgen.%s:%d", serviceDiscoveryEndpoint, idGenApiPort)
 			}
 
 			global.InitialiseTrace(name)
@@ -38,6 +42,7 @@ var (
 		},
 	}
 	idGenApiBaseUrl = ""
+	idGenApiPort int
 )
 
 var firstNames = []string{"Alfred", "Charles", "Victor", "Jean", "Tim", "Sue", "Ada", "David", "John"}
@@ -45,6 +50,7 @@ var lastNames = []string{"Aho", "Babbage", "Bahl", "Bartik", "Barners-Lee", "Bla
 
 func init() {
 	NameGenCmd.Flags().StringVar(&idGenApiBaseUrl, "idgen-api-base-url", "", "idgen api base address")
+	NameGenCmd.Flags().IntVar(&idGenApiPort, "idgen-api-port", 0, "idgen api port - used only with service discovery")
 }
 
 func setupNameGenServer(r *mux.Router) error {
@@ -60,7 +66,7 @@ func setupNameGenServer(r *mux.Router) error {
 			name := fmt.Sprintf("%s %s", firstNames[fni], lastNames[lni])
 
 			idGenApiBaseUrl = strings.TrimRight(idGenApiBaseUrl, "/")
-			getID, _ := http.NewRequestWithContext(req.Context(), "GET", fmt.Sprintf("%s:8080/ids/next", idGenApiBaseUrl), nil)
+			getID, _ := http.NewRequestWithContext(req.Context(), "GET", fmt.Sprintf("%s/ids/next", idGenApiBaseUrl), nil)
 			response, err := client.Do(getID)
 			if err != nil {
 				log.Print(err)

@@ -23,6 +23,19 @@ network:
   vpc:
     placement: private
 
+storage:
+  volumes:
+    otel_config:
+      path: /etc/otel
+
+sidecars:
+  otel:
+    image: otel/opentelemetry-collector-contrib:latest
+    essential: true
+    mount_points:
+      - source_volume: otel_config
+        path: /etc/otel
+
 # Optional fields for more advanced use-cases.
 #
 #variables:                    # Pass environment variables as key value pairs.
