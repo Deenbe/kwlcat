@@ -28,6 +28,7 @@ Resources:
               - "xray:GetSamplingTargets"
               - "xray:GetSamplingStatisticSummaries"
             Resource: "*"
+
 Outputs:
   XrayAccessPolicy:
     Description: "An IAM ManagedPolicy to allow access to xray"
