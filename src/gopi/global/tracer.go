@@ -28,7 +28,7 @@ func initialiseXrayTrace(name string) func() {
 	ctx := context.Background()
 	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 	if endpoint == "" {
-		endpoint = "0.0.0.0:55680"
+		endpoint = "0.0.0.0:4317"
 	}
 
 	driver := otlpgrpc.NewDriver(otlpgrpc.WithInsecure(), otlpgrpc.WithEndpoint(endpoint))

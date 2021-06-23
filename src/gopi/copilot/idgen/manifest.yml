@@ -32,14 +32,15 @@ sidecars:
   otel:
     image: otel/opentelemetry-collector-contrib:latest
     essential: true
+    port: 4317
     mount_points:
       - source_volume: otel_config
         path: /etc/otel
 
 # Optional fields for more advanced use-cases.
 #
-#variables:                    # Pass environment variables as key value pairs.
-#  LOG_LEVEL: info
+variables:                    # Pass environment variables as key value pairs.
+  OTEL_EXPORTER_OTLP_ENDPOINT: "otlp:4317"
 
 #secrets:                      # Pass secrets from AWS Systems Manager (SSM) Parameter Store.
 #  GITHUB_TOKEN: GITHUB_TOKEN  # The key is the name of the environment variable, the value is the name of the SSM parameter.
