@@ -20,7 +20,7 @@ RUN go build -o build/gopi .
 FROM alpine:3.13
 COPY --from=0 /home/gopi/build/gopi /usr/local/bin/
 RUN mkdir -p /etc/otel
-COPY otel-collector-config.yaml /etc/otel/config.yaml
+COPY otel-collector-config-release.yaml /etc/otel/config.yaml
 VOLUME /etc/otel
 
 ENTRYPOINT ["gopi"]
