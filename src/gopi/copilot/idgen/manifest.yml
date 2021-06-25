@@ -50,4 +50,10 @@ variables: # Pass environment variables as key value pairs.
 # You can override any of the values defined above by environment.
 environments:
   prod:
-    count: 20               # Number of tasks to run for the "test" environment.
+    count:
+      range:
+        min: 2
+        max: 20
+    cpu_percentage: 70               # Number of tasks to run for the "test" environment.
+    memory_percentage: 80
+    response_time: 200ms
