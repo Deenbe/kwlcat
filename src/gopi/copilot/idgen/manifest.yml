@@ -50,6 +50,8 @@ variables: # Pass environment variables as key value pairs.
 # You can override any of the values defined above by environment.
 environments:
   prod:
+    cpu: 1024
+    memory: 2048
     count:
       range:
         min: 2

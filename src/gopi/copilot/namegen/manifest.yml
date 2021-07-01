@@ -45,8 +45,8 @@ sidecars:
 
 # Optional fields for more advanced use-cases.
 #
-variables:                    # Pass environment variables as key value pairs.
-  OTEL_EXPORTER_OTLP_ENDPOINT: "otel:4317"
+variables:
+  OTEL_EXPORTER_OTLP_ENDPOINT: "localhost:4317"
 
 #secrets:                      # Pass secrets from AWS Systems Manager (SSM) Parameter Store.
 #  GITHUB_TOKEN: GITHUB_TOKEN  # The key is the name of the environment variable, the value is the name of the SSM parameter.
@@ -54,6 +54,8 @@ variables:                    # Pass environment variables as key value pairs.
 # You can override any of the values defined above by environment.
 environments:
   prod:
+    cpu: 1024
+    memory: 2048
     count:
       range:
         min: 2
