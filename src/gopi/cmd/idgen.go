@@ -45,6 +45,7 @@ func setupIDGenServer(r *mux.Router) error {
 	r.PathPrefix("/ids/next").
 		Methods("GET").
 		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+			// TODO: Read scope from incoming request
 			id, err := monotonicIDGenerator.Generate(req.Context(), "scope-a")
 			if err != nil {
 				res.WriteHeader(http.StatusInternalServerError)
