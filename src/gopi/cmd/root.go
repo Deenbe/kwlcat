@@ -11,7 +11,7 @@ var (
 	profile bool
 	RootCmd = &cobra.Command{
 		Use:  "gopi",
-		Long: "kwlcat core api",
+		Long: "kwlcat core api daemon",
 	}
 )
 
