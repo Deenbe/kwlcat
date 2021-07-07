@@ -25,7 +25,7 @@ var (
 	TracerProvider otelTrace.TracerProvider
 )
 
-func initialiseXrayTrace(name string, logger *zap.Logger) func() {
+func InitialiseTrace(name string, logger *zap.Logger) func() {
 	ctx := context.Background()
 	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 	if endpoint == "" {
@@ -76,8 +76,4 @@ func initialiseXrayTrace(name string, logger *zap.Logger) func() {
 		err := pusher.Stop(ctx)
 		log.Fatal("failed to stop metric controller: %v", err)
 	}
-}
-
-func InitialiseTrace(name string, logger *zap.Logger) func() {
-	return initialiseXrayTrace(name, logger)
 }
